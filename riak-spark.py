@@ -8,14 +8,14 @@ import time
 from pair import *
 
 sc = SparkContext("local", "Simple App")
-sc.addPyFile('./code/pair.py')
+sc.addPyFile('pair.py')
 #Grab data from google finance api
 #Daily stock data will be grab for all tickers in tickerFile from today until lastDay
 #and written to riak bucket 'stocks'
 
 today = datetime(datetime.now().year, datetime.now().month, datetime.now().day)#todays year,month,day
 lastDay = datetime(2000,1,1)#last day to download stock data from
-tickerFile = './code/NYSE.txt'#file contains all ticker,name pairs on NYSE
+tickerFile = 'NYSE.txt'#file contains all ticker,name pairs on NYSE
 dataSource = 'google'#download from 'google' or 'yahoo
 
 stocks = pd.read_csv(tickerFile,sep='\t',header=None)#read in stock ticker,name pairs
@@ -33,7 +33,8 @@ zThresh = 2
 beginDay = 0
 ndays = 100
 critLevel = '5%' #can be '1%', '5%', or '10%'
-delKeys = deleteAllKeys('tradeEntries')
+writeBucket = 'tradeEntries'
+delKeys = deleteAllKeys(writeBucket)
 #Gather the data into rdd and transform so that pairAnalysis can be run on each pair of stocks
 
 #Spark 
@@ -47,7 +48,7 @@ t0 = time.time()#time begin
 d = sc.parallelize(tickers[0:100]).map(lambda x: (x, riakGetStock(x)))\
     .filter(lambda x: len(x[1]) > minDays)\
     .filter(lambda x: numpy.mean([i[1] for i in x[1]]) > minVol)\
-    .map(lambda x: (x[0],mySort(x[1])))\
+    .map(lambda x: (x[0],mySort(x[1],2)))\
     .map(lambda x: (x[0],myFilter(x[1],minDays))).cache()
 
 #Analyze all stock pairs and return the results    
@@ -60,7 +61,7 @@ d = sc.parallelize(tickers[0:100]).map(lambda x: (x, riakGetStock(x)))\
 pairs = d.cartesian(d)\
     .map(lambda x: pairAnalysis(x,ndays,beginDay,zThresh))\
     .filter(lambda x: type(x) is list)\
-    .map(lambda x: writeSinglePair(x))\
+    .map(lambda x: writeSinglePair(x,writeBucket))\
     .cache().collect()
 t1 = time.time()#time end
 

@@ -45,7 +45,7 @@ def test_pairCalc_1():
 	assert len(pairCalc(testTSB,testTSD,0,100,0,'10%')) == 6
 
 def test_pairAnalysis_1():
-
+	import pandas as pd
 	#setup time series
 	testTSA = range(100)
 	testTSB = [x*2 for x in testTSA]+ np.random.normal(0,.01,100)
