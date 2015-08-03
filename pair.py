@@ -19,9 +19,9 @@ from riak import RiakClient, RiakObject
 
 #start is furthest day back and end is most recent day.  Grabs all data in between and stores in riak as json
 #runs through a file of ticker values
-def getData(tickerFile, dataSource, start, end):
+def getData(tickerFile, dataSource, start, end, riakIP):
 
-    rc = RiakClient(pb_port=8087, protocol='pbc')#set up riak connection
+    rc = RiakClient(protocol='pbc',host = riakIP, pb_port=8087)#set up riak connection
     added = []#list of successful adds
     notAdded = []#list of unsuccessful adds
     stock = pd.read_csv(tickerFile,sep='\t',header=None)#read in stock tickers
@@ -30,7 +30,7 @@ def getData(tickerFile, dataSource, start, end):
     for i in range(0,len(stock.head(100))):
         
         ticker = stock.ix[i,0]
-        if getDataByTicker(ticker,dataSource,start,end) == 0:
+        if getDataByTicker(ticker,dataSource,start,end,riakIP) == 0:
             notAdded.append(ticker)
         else:
             added.append(ticker)
@@ -38,14 +38,15 @@ def getData(tickerFile, dataSource, start, end):
 
 #start is furthest day back and end is closest to today, Store single stock data in riak
 #only grabs one stock
-def getDataByTicker(ticker, dataSource, start, end):
+def getDataByTicker(ticker, dataSource, start, end, riakIP):
 
-    rc = RiakClient(pb_port=8087, protocol='pbc')
+    rc = RiakClient(protocol='pbc',host = riakIP, pb_port=8087)
     #get daily data for each ticker
     gtemp = pd.DataFrame()
     bucket = rc.bucket('stocks')
     try:
         gtemp = DataReader(ticker,  dataSource, start, end)
+        print ticker
     except:
         pass
         
@@ -82,10 +83,55 @@ def getDataByTicker(ticker, dataSource, start, end):
 
     return len(gtemp.index)
 
+def downloadStock(ticker,dataSource,start,end):
+    gtemp = pd.DataFrame()
+    try:
+        gtemp = DataReader(ticker,  dataSource, start, end)
+        print ticker
+    except:
+        pass
+    return gtemp
+
+def writeHistory(ticker, data, riakIP):
+    rc = RiakClient(protocol='pbc',host = riakIP, pb_port=8087)
+    bucket = rc.bucket('stocks')
+    gtemp = data
+    if len(gtemp) == 0:
+        return 0
+    else:
+
+        for j in range(0,len(gtemp.index)):
+                
+                #upload json to Riak Bucket
+                date = gtemp.index[j].date()
+                riakKey = str(ticker + '_' + str(date))
+                riakVal = {'OPEN': gtemp.values[j,0],\
+                            'HIGH': gtemp.values[j,1],\
+                            'LOW': gtemp.values[j,2], \
+                            'CLOSE': gtemp.values[j,3], \
+                            'VOLUME': gtemp.values[j,4],\
+                            'DATE': str(date),\
+                            'TICKER': str(ticker)}
+                    
+                obj = RiakObject(rc, bucket, riakKey)
+                    
+                obj.add_index("ticker_bin", str(ticker))
+                obj.add_index("year_int", int(date.year))
+                obj.add_index("month_int", int(date.month))
+                obj.add_index("day_int", int(date.day))
+                    
+                obj.content_type = 'text/json'
+                #obj.data = riakVal
+                obj.data = json.dumps(riakVal)
+                obj.store()
+
+    return len(gtemp.index)
+
+
 #searches riak bucket via 2i query and returns a dict of the data
-def riakSearchData(searchBucket, searchTerm, searchVal1, searchVal2):
+def riakSearchData(searchBucket, searchTerm, searchVal1, searchVal2,riakIP):
     myData = {}#empty dict
-    myBucket = RiakClient(pb_port=8087, protocol='pbc').bucket(searchBucket)
+    myBucket = RiakClient(protocol='pbc',host = riakIP, pb_port=8087).bucket(searchBucket)
     #check wether 1 or 2 search terms
     if searchVal2 != None:
         for key in myBucket.get_index(searchTerm, searchVal1, searchVal2): #get all keys with 2i match
@@ -96,45 +142,49 @@ def riakSearchData(searchBucket, searchTerm, searchVal1, searchVal2):
     return myData
 
 #store an individual key value pair in a bucket
-def storeKV(myBucket, myKey, myVal):
-    riak.RiakClient(pb_port=8087, protocol='pbc').bucket(myBucket).new(myKey, data = myVal).store()
+def storeKV(myBucket, myKey, myVal, riakIP):
+    riak.RiakClient(protocol='pbc',host = riakIP, pb_port=8087).bucket(myBucket).new(myKey, data = myVal).store()
     return
 
 #delete a key from a bucket, provide feedback to ensure deletion
-def deleteKey(delBucket, delKey):
-    riak.RiakClient(pb_port=8087, protocol='pbc').bucket(delBucket).delete(delKey)
-    if riak.RiakClient(pb_port=8087, protocol='pbc').bucket(delBucket).get(delKey).data == None:
+def deleteKey(delBucket, delKey,riakIP):
+    riak.RiakClient(protocol='pbc',host = riakIP, pb_port=8087).bucket(delBucket).delete(delKey)
+    if riak.RiakClient(protocol='pbc',host = riakIP, pb_port=8087).bucket(delBucket).get(delKey).data == None:
         print 'Successful delete: %s' % delKey
     else:
         print 'Failed delete: %s' % delKey
     return
 
 #delete key from bucket, no feedback
-def quickDeleteKey(delBucket,delKey):
-    riak.RiakClient(pb_port=8087, protocol='pbc').bucket(delBucket).delete(delKey)
+def quickDeleteKey(delBucket,delKey, riakIP):
+    riak.RiakClient(protocol='pbc',host = riakIP, pb_port=8087).bucket(delBucket).delete(delKey)
     return
 
 #delete all keys in a bucket, no feedback  
-def quickDeleteAllKeys(delBucket):
-    for keys in  riak.RiakClient(pb_port=8087, protocol='pbc').bucket(delBucket).stream_keys():
+def quickDeleteAllKeys(delBucket,riakIP):
+    for keys in  riak.RiakClient(protocol='pbc',host = riakIP, pb_port=8087).bucket(delBucket).stream_keys():
         for delKey in keys:
-            quickDeleteKey(delBucket, delKey)      
+            quickDeleteKey(delBucket, delKey,riakIP)      
     print 'Done'
     return
 
 #delete all keys in a bucket, with feedback
-def deleteAllKeys(delBucket):
+def deleteAllKeys(delBucket,riakIP):
     delList = []
-    for keys in  riak.RiakClient(pb_port=8087, protocol='pbc').bucket(delBucket).stream_keys():
-        for delKey in keys:
-            deleteKey(delBucket, delKey)
-            delList.append(delKey)
+    try:
+        for keys in  riak.RiakClient(protocol='pbc',host = riakIP, pb_port=8087).bucket(delBucket).stream_keys():
+            for delKey in keys:
+                deleteKey(delBucket, delKey,riakIP)
+                delList.append(delKey)
+    except:
+        print 'delete error'
+        pass
     return delList
 
 #get all key value pairs from a bucket
-def getAllKV(myBucket):
+def getAllKV(myBucket,riakIP):
     myData = {}
-    riak_bucket = riak.RiakClient(pb_port=8087, protocol='pbc').bucket(myBucket)
+    riak_bucket = riak.RiakClient(protocol='pbc',host = riakIP, pb_port=8087).bucket(myBucket)
     for keys in riak_bucket.stream_keys():
         for key in keys:
             tempData = riak_bucket.get(key).data
@@ -143,8 +193,8 @@ def getAllKV(myBucket):
     return myData
 
 #get single value for a key in a bucket
-def getValue(myBucket, myKey):
-    myVal = json.loads(riak.RiakClient(pb_port=8087, protocol='pbc').bucket(myBucket).get(myKey).data)
+def getValue(myBucket, myKey,riakIP):
+    myVal = json.loads(riak.RiakClient(protocol='pbc',host = riakIP, pb_port=8087).bucket(myBucket).get(myKey).data)
     return myVal
 
 #Take a tuple of tuples in and return something
@@ -209,22 +259,22 @@ def pairCalc(tsA,tsB,beginDay,ndays,zThresh = 2, critLevel = '5%'):
     return 1
 
 #write tradeable pair back into riak
-def writePairs(pairList,bucketName):
+def writePairs(pairList,bucketName,riakIP):
     
     #tradeable pairs are lists
     tradeable = [x for x in pairList if type(x) is list]
     
     for pair in tradeable:
-        writeSinglePair(pair,bucketName)
+        writeSinglePair(pair,bucketName,riakIP)
     
     #return a list of written pairs
     return tradeable
        
 #write a signle pair to riak
 #assumes pair is in a list of values
-def writeSinglePair(pair,bucketName):
+def writeSinglePair(pair,bucketName,riakIP):
     
-    rc = RiakClient(pb_port=8087, protocol='pbc')
+    rc = RiakClient(protocol='pbc',host = riakIP, pb_port=8087)
     bucket = rc.bucket(bucketName)
     
     #create key value pairs to stock in riak
@@ -282,9 +332,9 @@ def egct(y, x,critLevel):
 
 #get all values for a stock from riak  
 #return close,volume,date values in a list of list
-def riakGetStock(searchVal):
+def riakGetStock(searchVal,riakIP):
     myData = []
-    myBucket = RiakClient(pb_port=8087, protocol='pbc').bucket('stocks')
+    myBucket = RiakClient(protocol='pbc',host = riakIP, pb_port=8087).bucket('stocks')
     for key in myBucket.get_index('ticker_bin', searchVal): # get all from 2002 to 2012
         value = json.loads(myBucket.get(key).data)
         myData.append([(value['CLOSE']), (value['VOLUME']), str(value['DATE'])])
