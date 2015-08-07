@@ -7,7 +7,7 @@ cron   = CronTab()
 job  = cron.new(command='python /home/ubuntu/deploy/run.py')
 
 #job settings
-job.hour().on(1)
-job.minute().on(0)
+job.hour.on(1)
+job.minute.on(0)
 job.enable()
 cron.write()

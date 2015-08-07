@@ -16,6 +16,11 @@ import numpy as np
 import statsmodels.api as stat
 import statsmodels.tsa.stattools as ts
 from riak import RiakClient, RiakObject
+import boto, urllib2
+from   boto.ec2 import connect_to_region
+import os
+import sys
+
 
 #start is furthest day back and end is most recent day.  Grabs all data in between and stores in riak as json
 #runs through a file of ticker values
@@ -363,5 +368,104 @@ def myFilter(s,n):
     else:
         print 'not a list'
         return 0
+
+
+def bootCluster(accessKey,secretKey,region,instanceType):
+
+    conn = boto.ec2.connect_to_region("us-east-1", aws_access_key_id=accessKey,aws_secret_access_key=secretKey)
+    instances = [i for r in conn.get_all_instances() for i in r.instances]
+
+    #start all non running instances
+    myInst = []
+    awsHosts = []
+    awsIPs = []
+
+    for i in instances:
+        if i.state == 'stopped' and i.instance_type == instanceType:
+            conn.start_instances(i.id)
+            myInst.append(str(i.id))
+
+    for i in myInst:
+        i.update()
+
+        while i.state != 'running':
+            print 'waiting for: ' + str(i.id)
+            time.sleep(2)
+            i.update()
+
+        awsHosts.append(str(i.dns_name))
+        awsIPs.append(str(i.private_ip_address))
+
+        print str(i.id)+ ' is running'
+
+    return myInst, awsHosts, awsIPs
+
+def stopCluster(accessKey,secretKey,region,instanceType):
+
+    conn = boto.ec2.connect_to_region("us-east-1", aws_access_key_id=accessKey,aws_secret_access_key=secretKey)
+    instances = [i for r in conn.get_all_instances() for i in r.instances]
+
+    myInst = []
+
+    for i in instances:
+        if i.state == 'running' and i.instance_type == instanceType:
+            conn.stop_instances(i.id)
+            myInst.append(str(i.id))
+
+    for i in myInst:
+        i.update()
+    
+        while i.state != 'stopped':
+            print 'waiting for: ' + str(i.id)
+            time.sleep(2)
+            i.update()
+        print str(i.id)+ ' is stopped'
+
+    return myInst
+
+def submitSparkJob(filePath, masterURL, depFilePath, mode, sparkLocation):
+
+    os.system(
+    'sudo '+sparkLocation+'/bin/spark-submit  \
+    '+filePath+' \
+    --master '+masterURL+' \
+    --deploy-mode '+mode+' \
+    --py-files '+depFilePath)
+
+    return 'Submitted: '+filePath+' to '+masterURL
+
+def getDNSIP(accessKey,secretKey,region,instanceType):
+
+    conn = boto.ec2.connect_to_region("us-east-1", aws_access_key_id=accessKey,aws_secret_access_key=secretKey)
+    awsHosts = []
+    awsIPs = []
+    instances = [i for r in conn.get_all_instances() for i in r.instances]
+
+    for i in instances:
+        if i.state == 'running' and i.instance_type == 't2.medium':
+            awsHosts.append(str(i.dns_name))
+            awsIPs.append(str(i.private_ip_address))
+
+    return awsHosts, awsIPs
+
+def updateDate(riakIP):
+
+    print '::::Writing Date of New Update::::'
+    newUpdate = {'Year': datetime.now().year,\
+                   'Month': datetime.now().month,\
+                   'Day': datetime.now().day,\
+                   'Hour': datetime.now().hour,\
+                   'Minute': datetime.now().minute}
+    print newUpdate
+    storeKV("meta", "update", json.dumps(newUpdate), riakIP)
+
+    return
+
+
+
+
+
+
+
 
 # End of pair.py

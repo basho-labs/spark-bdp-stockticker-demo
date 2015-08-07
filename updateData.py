@@ -14,24 +14,19 @@ import sys
 
 accessKey = 'AKIAIGBU3O2I45SZV57A'
 secretKey = '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'
-conn = boto.ec2.connect_to_region("us-east-1", aws_access_key_id=accessKey,aws_secret_access_key=secretKey)
-reservations = conn.get_all_instances()
-awsHosts = []
-awsIPs = []
-instances = [i for r in conn.get_all_instances() for i in r.instances]
-for i in instances:
-	if str(i.__dict__['_state']) == 'running(16)' and i.instance_type == 't2.medium':
-		awsHosts.append(str(i.__dict__['dns_name']))
-		awsIPs.append(str(i.__dict__['private_ip_address']))
+region = "us-east-1"
+instanceType = 't2.medium'
+depFilePath1 = '/home/ubuntu/deploy/pair.py'
+depFilePath2 = '/home/ubuntu/deploy/NYSE.txt'
 
+awsHosts, awsIPs = getDNSIP(accessKey,secretKey,region,instanceType)
 
 riakIP = awsIPs[0]
-numWorkers = 4
 masterPort = 7077
-masterURL = str('spark://'+str(awsIPs[0])+":"+str(masterPort))
+masterURL = str('spark://'+str(riakIP)+":"+str(masterPort))
 
 sc = SparkContext(masterURL, "UpdateData")
-sc.addPyFile('/home/ubuntu/deploy/pair.py')
+sc.addPyFile(depFilePath1)
 #Grab data from google finance api
 #Daily stock data will be grab for all tickers in tickerFile from today until lastDay
 #and written to riak bucket 'stocks'
@@ -43,7 +38,7 @@ print lastUpdate
 
 lastDayUpdated = datetime(lastUpdate['Year'],lastUpdate['Month'],lastUpdate['Day'])#last day to download stock data from
 updateStart = lastDayUpdated - timedelta(days=5)
-tickerFile = '/home/ubuntu/deploy/NYSE.txt'#file contains all ticker,name pairs on NYSE
+tickerFile = depFilePath2#file contains all ticker,name pairs on NYSE
 dataSource = 'google'#download from 'google' or 'yahoo
 
 stocks = pd.read_csv(tickerFile,sep='\t',header=None)#read in stock ticker,name pairs
@@ -53,13 +48,8 @@ dataGet = sc.parallelize(tickers[0:100],100).map(lambda x:
 	(x,downloadStock(x,dataSource,updateStart,today))).map(lambda x: writeHistory(x[0],x[1], riakIP)).collect()
 
 print dataGet
-print '::::Writing Date of New Update::::'
-newUpdate = {'Year': today.year,\
-               'Month': today.month,\
-               'Day': today.day,\
-               'Hour': datetime.now().hour,\
-               'Minute': datetime.now().minute}
-print newUpdate
-storeKV("meta", "update", json.dumps(newUpdate), riakIP)
+
+updateDate(riakIP)
+
 
 
