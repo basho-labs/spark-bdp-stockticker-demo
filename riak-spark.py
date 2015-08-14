@@ -79,6 +79,7 @@ pairs = d.cartesian(d)\
     .coalesce(20)\
     .map(lambda x: writeSinglePair(x,writeBucket,riakIP =riakIP))\
     .collect()
+    
 print pairs
 print getAllKV('tradeEntries',riakIP =riakIP)
 

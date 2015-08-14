@@ -427,10 +427,10 @@ def submitSparkJob(filePath, masterURL, depFilePath, mode, sparkLocation):
 
     os.system(
     'sudo '+sparkLocation+'/bin/spark-submit  \
-    '+filePath+' \
     --master '+masterURL+' \
     --deploy-mode '+mode+' \
-    --py-files '+depFilePath)
+    --py-files '+depFilePath+' \
+    '+filePath)
 
     return 'Submitted: '+filePath+' to '+masterURL
 
