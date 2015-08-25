@@ -15,8 +15,8 @@ import sys
 from riak import RiakClient, RiakObject
 import riak
 
-accessKey = 'AKIAIGBU3O2I45SZV57A'
-secretKey = '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'
+accessKey = 'insertAccessKey'
+secretKey = 'insertSecretKey'
 region = "us-east-1"
 clusterInstType = 't2.medium'
 depFilePath1 = '/home/ubuntu/deploy/pair.py'

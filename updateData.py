@@ -12,8 +12,8 @@ from   fabric.api import parallel
 import os
 import sys
 
-accessKey = 'AKIAIGBU3O2I45SZV57A'
-secretKey = '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'
+accessKey = 'insertAccessKey'
+secretKey = 'insertSecretKey'
 region = "us-east-1"
 instanceType = 't2.medium'
 depFilePath1 = '/home/ubuntu/deploy/pair.py'

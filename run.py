@@ -7,15 +7,15 @@ import time
 from pair import *
 
 
-accessKey = 'AKIAIGBU3O2I45SZV57A'
-secretKey = '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'
+accessKey = 'insertAccessKey'
+secretKey = 'insertSecretKey'
 region = "us-east-1"
 clusterInstType = 't2.medium'
 sparkLocation ='/usr/lib/riak/lib/data_platform-1/priv/spark-worker'
 filePath1 = '/home/ubuntu/deploy/updateData.py'
 filePath2 = '/home/ubuntu/deploy/riak-spark.py'
 depFilePath = '/home/ubuntu/deploy/pair.py'
-deployMode = 'cluster'
+deployMode = 'client'
 
 myInst, awsHosts,awsIPs = bootCluster(accessKey,secretKey,region,clusterInstType)
 riakIP = awsIPs[0]
