@@ -26,10 +26,12 @@ This should tie together the BDP cluster.  This only needs to be run once.
 ```
 python setupCron.py
 ```
+
 10. Populate the database by running the following:
 ```
 python populateData.py
 ```
+
 This completes the setup.  You now have a single t2.micro that will boot a sleeping 5 node BDP t2.medium cluster each night at 1 am, update the BDP Riak database, run analysis on all stock pairs on the NYSE, write the results back to the BDP Riak database, shut down the 5 node BDP t2.medium cluster, and wait until tomorrow to do it all over again, ad infintum.
 
 
