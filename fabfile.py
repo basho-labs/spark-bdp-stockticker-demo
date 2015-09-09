@@ -9,14 +9,12 @@ import sys
 REGION       = os.environ.get("AWS_EC2_REGION")
 env.user      = "ubuntu"
 env.key_filename = ["insertKeyPair.pem"]
-
 accessKey = 'insertAccessKey'
 secretKey = 'insertSecretKey'
 conn = boto.ec2.connect_to_region("us-east-1", aws_access_key_id=accessKey,aws_secret_access_key=secretKey)
 reservations = conn.get_all_instances()
 
 awsIPs = []
-
 awsMicro = []
 allHosts = []
 awsMedium = []
@@ -51,6 +49,7 @@ else:
 	    'allCluster': allHosts,
 	    'launcher': awsMicro
 	} 
+
 
 @parallel
 def test():

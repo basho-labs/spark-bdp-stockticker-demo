@@ -21,7 +21,6 @@ from   boto.ec2 import connect_to_region
 import os
 import sys
 
-
 #start is furthest day back and end is most recent day.  Grabs all data in between and stores in riak as json
 #runs through a file of ticker values
 def getData(tickerFile, dataSource, start, end, riakIP):
@@ -132,7 +131,6 @@ def writeHistory(ticker, data, riakIP):
 
     return len(gtemp.index)
 
-
 #searches riak bucket via 2i query and returns a dict of the data
 def riakSearchData(searchBucket, searchTerm, searchVal1, searchVal2,riakIP):
     myData = {}#empty dict
@@ -235,8 +233,6 @@ def pairAnalysis(pairTuple, ndays, beginDay = 0, zThresh = 2, critLevel = '5%'):
             return pair
     else:
         return pair
-
-
 
 def pairCalc(tsA,tsB,beginDay,ndays,zThresh = 2, critLevel = '5%'):
     
@@ -369,7 +365,6 @@ def myFilter(s,n):
         print 'not a list'
         return 0
 
-
 def bootCluster(accessKey,secretKey,region,instanceType):
 
     conn = boto.ec2.connect_to_region("us-east-1", aws_access_key_id=accessKey,aws_secret_access_key=secretKey)
@@ -455,12 +450,5 @@ def updateDate(riakIP):
     storeKV("meta", "update", json.dumps(newUpdate), riakIP)
 
     return
-
-
-
-
-
-
-
 
 # End of pair.py
