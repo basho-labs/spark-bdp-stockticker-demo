@@ -1,5 +1,28 @@
 # riak-spark-project
 
+
+Overview
+----
+The goal of this project was to create a an automated trading signal generator use case for the Basho Data Platform.  The signal generator would be run using a cluster of AWS EC2 machines that would boot up each night after the markets closed.  After the cluster boots up, the Riak database is updated with the previous days market data.  The database is initally filled with approx. 10 years of data on every stock currently trading on the NYSE provided by Google Finance API.  Once the database is updated, then analysis creates all possible stock pairs (9 million) and runs an Engle-Granger Cointegration test. Stocks that are cointegrated are then filtered by using a standard deviation parameter.  All pairs that are cointegrated and currently outside a standard deviation threshold are then written back into the Riak database for potentially further analysis before being traded.  This process is repeated each night at 1am.
+
+Quick Start
+----
+Create a blank AWS Ubuntu 12.04 AMI
+Download and install the Basho Data Platform on the newly created AMI
+Clone this repo on the AMI in dir /home/ubuntu/deploy
+On the AMI install pip then run
+```
+pip install -r /path/to/requirements.txt
+```
+Now save the AMI
+Create one EC2 t2.micro with this AMI, this will act as the launcher
+Create five EC2 t2.mediums with this AMI, these will act as compute cluster
+
+
+
+
+
+
 Files:
 
 NYSE.txt - this file contains stock symbols for the New York Stock Exchange.

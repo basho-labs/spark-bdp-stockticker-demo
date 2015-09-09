@@ -423,16 +423,11 @@ def stopCluster(accessKey,secretKey,region,instanceType):
 
     return myInst
 
-def submitSparkJob(filePath, masterURL, depFilePath, mode, sparkLocation):
+def submitSparkJob(sparkJob):
 
-    os.system(
-    'sudo '+sparkLocation+'/bin/spark-submit  \
-    --master '+masterURL+' \
-    --deploy-mode '+mode+' \
-    --py-files '+depFilePath+' \
-    '+filePath)
+    os.system('fab -R worker '+ sparkJob)
 
-    return 'Submitted: '+filePath+' to '+masterURL
+    return 'Submitted: ' + sparkJob
 
 def getDNSIP(accessKey,secretKey,region,instanceType):
 
