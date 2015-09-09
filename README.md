@@ -41,6 +41,8 @@ Files
 
 Warnings
 ----
-To run full prgram you must modify 'tickers[0:100]' to 'tickers' in riak-spark.py and updateData.py.
+1. To run full prgram you must modify 'tickers[0:100]' to 'tickers' in riak-spark.py and updateData.py.
 This program should not be run on anything less than one launcher/client node and 5 cluster nodes.  The run time will be >> 2 hours otherwise.
-This program was tested and runs, however, there is no guarantee of success or accuracy and some shaking may be neccesary.
+2. This program was tested and runs, however, there is no guarantee of success or accuracy and some shaking may be neccesary.
+3. You need to place your AWS access key and secret key in some files before running
+4. You need to ensure correct permissions on AWS for automatic booting and shut down as well as opening all incoming and outgoing ports in the security group
