@@ -32,18 +32,18 @@ This completes the setup.  You now have a single t2.micro that will boot a sleep
 
 
 
-Files:
-
-*NYSE.txt: this file contains stock symbols for the New York Stock Exchange.
-*fabfile.py: this file is a Fabric library that can be used to create BDP clusters on AWS.
-*pair.py: this file is a python library containing methods used to boot cluster, download data, retreive data from Riak, run analysis, write data to Riak, and shutdown cluster.
-*populateData.py: this file is used to initial file Riak with historical raw stock data.
-*requirements.txt: pythn librarys that need to be installed with pip on all machines in the cluster and client machine.
-*riak-spark.py: this file contains the main functionality of the project.  It is where Spark analysis is done.
-*run.py: this file is run from the client machine to boot cluster, update data, run analysis, and shutdown cluster.
-*setupBDPAWS.sh: shell script to automatically launch and configure a BDP Spark cluster on AWS.  Uses fabfile.py library
-*setupCron.py: this file is used to configure cron on launcher machine.
-*updateData.py: this file updates raw stock data
+Files
+----
+1. NYSE.txt: this file contains stock symbols for the New York Stock Exchange.
+2. fabfile.py: this file is a Fabric library that can be used to create BDP clusters on AWS.
+3. pair.py: this file is a python library containing methods used to boot cluster, download data, retreive data from Riak, run analysis, write data to Riak, and shutdown cluster.
+4. populateData.py: this file is used to initial file Riak with historical raw stock data.
+5. requirements.txt: pythn librarys that need to be installed with pip on all machines in the cluster and client machine.
+6. riak-spark.py: this file contains the main functionality of the project.  It is where Spark analysis is done.
+7. run.py: this file is run from the client machine to boot cluster, update data, run analysis, and shutdown cluster.
+8. setupBDPAWS.sh: shell script to automatically launch and configure a BDP Spark cluster on AWS.  Uses fabfile.py library
+9. setupCron.py: this file is used to configure cron on launcher machine.
+10. updateData.py: this file updates raw stock data
 
 
 Warnings
