@@ -220,15 +220,21 @@ def deleteCode():
 
 def runAnalysis():
 	sudo('/usr/lib/riak/lib/data_platform-1/priv/spark-worker/bin/spark-submit  \
-		/home/ubuntu/deploy/riak-spark.py \
 		--master spark://'+awsIPs[0]+':7077 \
-		--py-files /home/ubuntu/deploy/pair.py')
+		--py-files /home/ubuntu/deploy/pair.py \
+         /home/ubuntu/deploy/riak-spark.py')
 
 def runUpdate():
 	sudo('/usr/lib/riak/lib/data_platform-1/priv/spark-worker/bin/spark-submit  \
-		/home/ubuntu/deploy/updateData.py \
 		--master spark://'+awsIPs[0]+':7077 \
-		--py-files /home/ubuntu/deploy/pair.py')
+		--py-files /home/ubuntu/deploy/pair.py \
+           /home/ubuntu/deploy/updateData.py ')
+
+def runPopulate():
+    sudo('/usr/lib/riak/lib/data_platform-1/priv/spark-worker/bin/spark-submit  \
+         --master spark://'+awsIPs[0]+':7077 \
+         --py-files /home/ubuntu/deploy/pair.py \
+         /home/ubuntu/deploy/downloadStocks.py ')
 
 def testSparkCluster():
 	with settings(warn_only=True):
