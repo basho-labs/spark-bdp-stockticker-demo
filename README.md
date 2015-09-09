@@ -10,27 +10,14 @@ Quick Start
 1. Create a blank AWS Ubuntu 12.04 AMI
 2. Download and install the Basho Data Platform on the newly created AMI
 3. Clone this repo on the AMI in dir /home/ubuntu/deploy
-4. On the AMI install pip then run
-```
-sudo pip install -r /path/to/requirements.txt
-```
+4. On the AMI install pip then run `sudo pip install -r /path/to/requirements.txt`
 5. Save the AMI
 6. Create one EC2 t2.micro with this AMI, this will act as the launcher
 7. Create five EC2 t2.mediums with this AMI, these will act as compute cluster
-8. From /home/ubunut/deploy dir on t2.micro, run the following to set up BDP cluster:
-```
-sudo sh setupBDPAWS.sh
-```
+8. From /home/ubunut/deploy dir on t2.micro, run the following to set up BDP cluster: `sudo sh setupBDPAWS.sh`
 This should tie together the BDP cluster.  This only needs to be run once.
-9. From /home/ubunut/deploy dir on t2.micro, run the following to setup automated running:
-```
-python setupCron.py
-```
-
-10. Populate the database by running the following:
-```
-python populateData.py
-```
+9. From /home/ubunut/deploy dir on t2.micro, run the following to setup automated running:`python setupCron.py`
+10. Populate the database by running the following: `python populateData.py`
 
 This completes the setup.  You now have a single t2.micro that will boot a sleeping 5 node BDP t2.medium cluster each night at 1 am, update the BDP Riak database, run analysis on all stock pairs on the NYSE, write the results back to the BDP Riak database, shut down the 5 node BDP t2.medium cluster, and wait until tomorrow to do it all over again, ad infintum.
 
