@@ -16,7 +16,7 @@ This project is designed to leverage BDP for stock analysis on AWS. It has been 
   * [Maintainers](#maintainers)
 
 ## Overview
-This began as an internship at Basho. Read more about this project in this blog post. // ADD POST LINK
+This began as an internship at Basho. Read more about this project in [this blog post](http://basho.com/posts/technical/algorithms-and-stock-tickers-with-apache-spark-my-summer-internship-with-basho).
 
 The goal of this project was to create an automated trading signal generator use case for the Basho Data Platform.  The signal generator would be run using a cluster of AWS EC2 machines that would boot up each night after the markets closed.  After the cluster boots up, the Riak KV database is updated with the previous day's market data.  
 
@@ -34,9 +34,9 @@ In order to run this demo, the following steps must be completed in order.
 7. Create five (5) EC2 t2.mediums with this AMI, these will act as the compute cluster
 8. From `/home/ubuntu/deploy` directory on the t2.micro system, run the following to set up BDP cluster: `sudo sh setupBDPAWS.sh`
 
-This should form the BDP cluster. This only needs to be run once. To confirm the cluster status, run the following on any node in the cluster and you should see:
+This should form the BDP cluster. This only needs to be run once. To confirm the cluster status, run `sudo data-platform-admin services` on any node in the cluster and you should see:
 
-     sudo data-platform-admin services
+     $ sudo data-platform-admin services
      Running Services:
      +------------+---------------+--------------+
      |   Group    |    Service    |     Node     |
@@ -58,7 +58,7 @@ This should form the BDP cluster. This only needs to be run once. To confirm the
 1. This program should not be run on anything less than the recommended number of AWS instances
 1. Users must modify the 'tickers[0:100]' to 'tickers' in `riak-spark.py` and `updateData.py`
 3. You need to place your AWS access key and secret key in `riak-spark.py`, `populateData.py`, `fabfile.py`, `run.py` and `updateData.py`
-4. You need to ensure correct permissions on AWS for automatic booting and shut down as well as opening all incoming and outgoing ports in the security group
+4. You need to ensure correct permissions on AWS for automatic booting and shutdown as well as opening all incoming and outgoing ports in the security group
 
 This completes the setup.  You now have a single t2.micro that will boot a sleeping 5 node BDP t2.medium cluster each night at 1am, update the BDP Riak database, run analysis on all stock pairs on the NYSE, write the results back to the BDP Riak database, shutdown the 5 node BDP t2.medium cluster, and wait until tomorrow to do it all over again, ad infintum.
 
@@ -84,7 +84,7 @@ Here is what each file does:
 
 ### Maintainers
 * Korrigan Clark ([GitHub](https://github.com/korry8911))
-* and You! [Read up](https://github.com/basho-labs/the-riak-community/blob/master/config-mgmt-strategy.md) and get involved
+* and You! [Read up](https://github.com/basho-labs/the-riak-community) and get involved
 
 You can [read the full guidelines](http://docs.basho.com/riak/latest/community/bugs/) for bug reporting and code contributions on the Riak Docs. And **thank you!** Your contribution is incredibly important to us.
 
